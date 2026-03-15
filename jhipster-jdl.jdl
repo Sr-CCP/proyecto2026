@@ -1,89 +1,62 @@
-entity Region {
-	nombreRegion String
+application {
+  config {
+    baseName aerolineaVirtual
+    applicationType monolith
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    buildTool maven
+  }
 }
 
-entity Pais {
-	nombrePais String
+entity Pasajero {
+  nombre String required
+  apellido String required
+  email String required unique
+  telefono String
+  fechaNacimiento LocalDate
 }
 
-// comentario de una linea
-/** comentario de un parrafo */
-entity Direccion {
-	calle String
-	codigoPostal String
-	ciudad String
-	provincia String
+entity Reserva {
+  codigo String required unique
+  fechaReserva Instant required
+  estado EstadoReserva required
 }
 
-entity Departamento {
-	nombreDepartamento String required
+entity Vuelo {
+  numeroVuelo String required unique
+  origen String required
+  destino String required
+  fechaSalida Instant required
+  fechaLlegada Instant required
 }
 
-entity Tarea {
-	titulo String
-	descripcion String
-}
-entity Empleado {
-	nombres String
-	apellidos String
-	correo String
-	nroCelular String
-	fechacontrato Instant
-	salario Long
-	comisionPorcentaje Long
+entity Asiento {
+  numero String required
+  clase ClaseAsiento required
+  disponible Boolean required
 }
 
-entity Trabajo {
-	tituloTrabajo String
-	salarioMin Long
-	salarioMax Long
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
 }
 
-entity Contrato {
-	fechaInicio Instant
-	fechaFin Instant
-	lenguaje Idioma
-}
-
-enum Idioma {
-    ESPANOL, INGLES, PORTUGUES
-}
-
-relationship OneToOne {
-	Pais{region} to Region
-}
-
-relationship OneToOne {
-	Direccion{pais} to Pais
-}
-
-relationship OneToOne {
-	Departamento{direccion} to Direccion
-}
-
-relationship ManyToMany {
-	Trabajo{tarea(titulo)} to Tarea{trabajo}
+enum ClaseAsiento {
+  ECONOMICA
+  EJECUTIVA
+  PRIMERA
 }
 
 relationship OneToMany {
-	Empleado to Trabajo{empleado}
-	Departamento to	Empleado{departamento}
+  Pasajero{reservas} to Reserva{pasajero}
 }
 
 relationship ManyToOne {
-	Empleado{inmediatosuperior} to Empleado
+  Reserva{vuelo} to Vuelo
+  Reserva{asiento} to Asiento
 }
 
-// defining multiple oneToOne relationships
-relationship OneToOne {
-	Contrato{trabajo} to Trabajo
-	Contrato{departamento} to Departamento
-	Contrato{empleado} to Empleado
-}
-
-// mostrar con scroll 
-paginate Contrato, Empleado with infinite-scroll
-paginate Trabajo with pagination
-
-// Insertar opciones basicas a todos menos a Empleado, trabajo 
-service all with serviceImpl except Empleado, Trabajo
+paginate Pasajero, Reserva, Vuelo, Asiento with pagination
+service Pasajero, Reserva, Vuelo, Asiento with serviceClass
